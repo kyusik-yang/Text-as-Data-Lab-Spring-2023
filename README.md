@@ -25,3 +25,7 @@ Please make sure you have:
 - Latest version of R
 
 - Latest version of RStudio
+
+#### Credits
+
+Special thanks to previous TA's [Lucia Motolinia](https://polisci.wustl.edu/people/lucia-motolinia) and [Pedro Rodriguez](https://github.com/prodriguezsosa) for sharing materials for this course. 
