@@ -1,8 +1,8 @@
 ### DS-GA 1015 Text-as-Data Spring 2019
 
-Materials for the lab component of DS-GA 1015 Text-as-Data (Spring 2019) can be found here. 
+Materials for the lab component of DS-GA 1015 Text-as-Data (Spring 2023) can be found here. 
 
-Lab is on Thursdays from 2-2:50 pm in room 110, 60 5th Ave (Center for Data Science).
+Lab is on Thursdays from 5:55-6:45 pm in room 150, 60 5th Ave (Center for Data Science).
 
 Some files for future labs may be online, but please check back at the beginning of each lab for the most updated version of that day's materials!
 
