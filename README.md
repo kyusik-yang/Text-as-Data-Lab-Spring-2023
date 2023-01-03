@@ -1,4 +1,4 @@
-### DS-GA 1015 Text-as-Data Spring 2019
+### DS-GA 1015 Text-as-Data Spring 2023
 
 Materials for the lab component of DS-GA 1015 Text-as-Data (Spring 2023) can be found here. 
 
