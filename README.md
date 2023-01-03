@@ -6,6 +6,8 @@ Lab is on Thursdays from 5:55-6:45 pm in room 150, 60 5th Ave (Center for Data S
 
 Some files for future labs may be online, but please check back at the beginning of each lab for the most updated version of that day's materials!
 
+The class Brightspace page is [here](https://brightspace.nyu.edu/d2l/home/243188).
+
 #### How to get files on your machine
 
 GitHub users: [Fork](https://help.github.com/articles/fork-a-repo/) this repo.
