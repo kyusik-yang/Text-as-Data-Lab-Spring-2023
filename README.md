@@ -8,6 +8,8 @@ Some files for future labs may be online, but please check back at the beginning
 
 The class Brightspace page is [here](https://brightspace.nyu.edu/d2l/home/243188).
 
+You can book office hours [here](https://calendly.com/elisa-wirsching/15min). 
+
 #### How to get files on your machine
 
 GitHub users: [Fork](https://help.github.com/articles/fork-a-repo/) this repo.
