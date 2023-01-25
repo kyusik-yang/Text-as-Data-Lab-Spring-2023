@@ -445,6 +445,34 @@ str_extract(sotu[[1]], "^(.+?)Representatives") # including pattern
 
 
 
+# ============================================================================= #
+####                              PREPROCESSING CHOICES                      ####
+# ============================================================================= #
+
+#devtools::install_github("matthewjdenny/preText")
+
+library(preText)
+
+# Run at home (takes a few minutes to run)
+# Example below taken from preText vignette: https://cran.r-project.org/web/packages/preText/vignettes/getting_started_with_preText.html
+
+preprocessed_documents <- factorial_preprocessing(
+  sotu[1:50],
+  use_ngrams = FALSE,
+  infrequent_term_threshold = 0.2,
+  verbose = FALSE)
+
+head(preprocessed_documents$choices)
+
+preText_results <- preText(preprocessed_documents,
+                           dataset_name = "SOTU Speeches",
+                           distance_method = "cosine",
+                           num_comparisons = 20,
+                           verbose = FALSE)
+
+
+preText_score_plot(preText_results)
+
 
 
 # Questions?
