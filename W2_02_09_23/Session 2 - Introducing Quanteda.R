@@ -460,7 +460,7 @@ preprocessed_documents <- factorial_preprocessing(
   sotu[1:50],
   use_ngrams = FALSE,
   infrequent_term_threshold = 0.2,
-  verbose = FALSE)
+  verbose = TRUE)
 
 head(preprocessed_documents$choices)
 
@@ -468,7 +468,7 @@ preText_results <- preText(preprocessed_documents,
                            dataset_name = "SOTU Speeches",
                            distance_method = "cosine",
                            num_comparisons = 20,
-                           verbose = FALSE)
+                           verbose = TRUE)
 
 
 preText_score_plot(preText_results)
