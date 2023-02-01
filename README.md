@@ -18,9 +18,8 @@ Non-GitHub users: Go to "Clone or download" > "Download ZIP" to download the fil
 
 #### Syncing to update files (pull changes)
 
-[Using terminal](https://help.github.com/articles/syncing-a-fork/) 
+[Using terminal or Web interface](https://help.github.com/articles/syncing-a-fork/) 
 
-[Using browser](https://github.com/KirstieJane/STEMMRoleModels/wiki/Syncing-your-fork-to-the-original-repository-via-the-browser)
 
 #### Software
 
