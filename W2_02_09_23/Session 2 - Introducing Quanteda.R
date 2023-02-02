@@ -1,6 +1,6 @@
 # TA: Elisa Wirsching
 # Course: Text as Data
-# Date: 2/02/2023
+# Date: 9/02/2023
 # Lab adapted from: Lucia Motolinia, Pedro L. Rodriguez, Kevin Munger, Patrick Chester and Leslie Huang.
 
 # other "similar" interesting packages: tm, tidytext
@@ -394,8 +394,17 @@ print(toks)
 # ============================================================================= #
 # regular expressions are a very powerful tool in wrangling text
 # not a focus of this class, but something to be aware of
-# cheatsheet for regex: https://github.com/rstudio/cheatsheets/blob/main/regex.pdf
+# cheatsheet for regex: 
+#     https://github.com/rstudio/cheatsheets/blob/main/regex.pdf
+#     https://evoldyn.gitlab.io/evomics-2018/ref-sheets/R_strings.pdf
 # to test your regex expressions: https://regex101.com/ 
+# or use stringr functions:
+
+see <- function(string, rx) stringr::str_view_all(string, rx)
+see("abc ABC 123\t.!?\\(){}\n", "a")
+see("abc ABC 123\t.!?\\(){}\n", "\\.")
+see("abc ABC 123\t.!?\\(){}\n", "[:digit:]")
+see("abc ABC 123\t.!?\\(){}\n", "\\s")
 
 # 7.1 Base R: grep package
 ################################

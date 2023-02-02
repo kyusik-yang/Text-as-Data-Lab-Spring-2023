@@ -1,6 +1,6 @@
 # TA: Elisa Wirsching
 # Course: Text as Data
-# Date: 1/26/2021
+# Date: 02/02/2023
 # Lab adapted from: Lucia Motolinia, Pedro L. Rodriguez, Kevin Munger, Patrick Chester and Leslie Huang.
 
 # Before you start:
@@ -67,7 +67,7 @@ pacman::p_load(dplyr,
 # (More about this next week.)
 
 # 1.6 Loading data
-polling_data  <- read.csv("W1_01_26_23/national_clinton_trump_6_20_2016.csv", 
+polling_data  <- read.csv("W1_02_02_23/national_clinton_trump_6_20_2016.csv", 
                           stringsAsFactors = FALSE)
 
 
@@ -252,7 +252,7 @@ plot1
 ###########################
 
 # Exporting table to CSV
-write.csv(table1,file = "W1_01_26_23/table1.csv")
+write.csv(table1,file = "W1_02_02_23/table1.csv")
 
 # Creating LaTeX table (copy output and paste in your Latex document)
 xtable(table1,caption = "Average Clinton Polling Advantage by Polling Firm")
@@ -260,13 +260,13 @@ xtable(table1,caption = "Average Clinton Polling Advantage by Polling Firm")
 stargazer::stargazer(table1, summary = FALSE)
 
 # Exporting graph to pdf
-pdf(width = 4, height = 3, "W1_01_26_23/plot1.pdf")
+pdf(width = 4, height = 3, "W1_02_02_23/plot1.pdf")
 plot1
 dev.off()
 
 # or use ggsave (my preferred option)
 ggsave(filename="plot1.pdf", 
-       path = "W1_01_26_23", 
+       path = "W1_02_02_23", 
        width = 10, height = 6) 
 
 
@@ -315,7 +315,7 @@ polling_data %>%
   summarise(avg.clinton = mean(Clinton), avg.trump = mean(Trump, na.rm = TRUE))
 polling_data %>% 
   rowwise() %>% 
-  summarise(avg.row = mean(Clinton, Trump, na.rm = TRUE))
+  summarise(avg.row = mean(c(Clinton, Trump), na.rm = TRUE)) 
   
 # Python users: The function passed to sapply() is the equivalent of a lambda function
 
