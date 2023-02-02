@@ -2,7 +2,7 @@
 
 Materials for the lab component of DS-GA 1015 Text-as-Data (Spring 2023) can be found here. 
 
-Lab is on Thursdays from 5:55-6:45 pm in room 150, 60 5th Ave (Center for Data Science).
+Lab is on Thursdays from 5:55-6:45 pm in Room 408 at the Silver Building.
 
 Some files for future labs may be online, but please check back at the beginning of each lab for the most updated version of that day's materials!
 
@@ -18,9 +18,8 @@ Non-GitHub users: Go to "Clone or download" > "Download ZIP" to download the fil
 
 #### Syncing to update files (pull changes)
 
-[Using terminal](https://help.github.com/articles/syncing-a-fork/) 
+[Using terminal or Web interface](https://help.github.com/articles/syncing-a-fork/) 
 
-[Using browser](https://github.com/KirstieJane/STEMMRoleModels/wiki/Syncing-your-fork-to-the-original-repository-via-the-browser)
 
 #### Software
 
