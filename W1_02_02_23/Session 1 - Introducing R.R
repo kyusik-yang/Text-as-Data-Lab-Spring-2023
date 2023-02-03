@@ -119,7 +119,7 @@ polling_data %>%
   select(Pollster) %>% 
   head(.,10)
 polling_data %>% 
-  select(Pollster, Number.of.Observations) %>% 
+  select(c("Pollster", "Number.of.Observations")) %>% 
   head()
 
 # Alternative syntax
@@ -169,6 +169,9 @@ select(filter(polling_data, Pollster == "Quinnipiac"), Number.of.Observations)  
 # A) Dollar sign operator
 polling_data$net_clinton_a <- polling_data$Clinton - polling_data$Trump
 
+polling_data <- polling_data %>% 
+  relocate(Clinton, Trump, net_clinton_a)
+
 # B) Matrix identifier
 polling_data[, "net_clinton_b"]  <- polling_data[, "Clinton"] - polling_data[, "Trump"]
 
@@ -212,7 +215,7 @@ polling_data <- polling_data %>%
 summary(polling_data)  # summary statistics where appropriate (non-string/character variables)
 
 # C) Single variable summary
-mean(polling_data$net_clinton_a)
+mean(polling_data$net_clinton_a, na.rm=T)
 sd(polling_data$net_clinton_a)
 polling_data %>% 
   summarise(mean_net_clinton = mean(net_clinton_a))  # using dplyr
@@ -278,9 +281,9 @@ ggsave(filename="plot1.pdf",
 # 3.1 For Loops
 ######################
 
-for(col_name in names(polling_data)){ # A loop that identifies and stores variables that contain characters
-  if(is.character(polling_data[, col_name])) {
-    print(col_name)
+for(x in names(polling_data)){ # A loop that identifies and stores variables that contain characters
+  if(is.character(polling_data[, x])) {
+    print(x)
   }
 }
 
@@ -312,7 +315,8 @@ apply(polling_data[,c("Clinton", "Trump")], 1, mean, na.rm = TRUE) # 1 = rows
 
 # dplyr version
 polling_data %>% 
-  summarise(avg.clinton = mean(Clinton), avg.trump = mean(Trump, na.rm = TRUE))
+  summarise(avg.clinton = mean(Clinton), 
+            avg.trump = mean(Trump, na.rm = TRUE))
 polling_data %>% 
   rowwise() %>% 
   summarise(avg.row = mean(c(Clinton, Trump), na.rm = TRUE)) 
