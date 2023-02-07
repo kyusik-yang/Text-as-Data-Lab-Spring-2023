@@ -20,89 +20,8 @@ pacman::p_load(dplyr,
                quanteda.corpora,
                quanteda.textstats) 
 
-
-# sophistication: https://github.com/kbenoit/sophistication
 # gutenbergr: https://www.gutenberg.org/, https://cran.r-project.org/web/packages/gutenbergr/index.html 
 # stylest: https://leslie-huang.github.io/stylest/
-
-# ============================================================================= #
-####                              NON-ENGLISH TEXTS                          ####
-# ============================================================================= #
-
-# 1.1 Non-English stopwords
-
-stopwords(language = "spanish")
-
-stopwords(language = "german")
-
-stopwords(language = "zh", source = "misc")
-
-# 1.2 Text encoding
-
-# What is text encoding?
-# How do you figure out what kind you have (e.g. scraped text from the Internet)?
-# What kind of encoding can R and/or quanteda handle?
-
-# 1.3 Some types of text encoding
-# character encoding is a set of mappings between the bytes in the computer and the characters in the character set.
-# UTF-8
-# ASCII (subset of UTF-8)
-# Latin-1
-
-# UTF-8 represents characters from European languages (English, Spanish, German, French, etc) and some characters from Chinese/Japanese/Korean, plus emojis.
-
-# Note: Text obtained from Internet sources can be messy. Issues can especially arise when you are working with texts from multiple sources and you end up with a mixture of encodings. This can cause the encoding to be detected incorrectly when you read in the text.
-
-# 1.4 What encoding do you have?
-
-# You can check with this function in base R
-validUTF8("This is a sentence")
-
-# You can use the package utf8(), written by Patrick Perry from NYU
-# Read about it here: https://github.com/patperry/r-utf8
-# install.packages("utf8")
-library("utf8")
-
-as_utf8("\xF0\x9F\x98\x8D")
-print("\xF0\x9F\x98\x8D") # There are issues with base R's print() function for Unicode
-# any guesses what this is?
-utf8_print("\xF0\x9F\x98\x8D")
-# emojis unicodes: https://www.unicode.org/emoji/charts/full-emoji-list.html
-
-# 1.5 What if you get a weird character and you're not sure?
-
-# install.packages("stringi")
-library("stringi")
-
-# Use the encoding guesser to guess what this character is
-stri_enc_detect("0x00E3")
-
-# It's only a guess!
-
-# What's ISO-8859-1?
-# This is another name for the Latin-1 encoding. 
-
-# 1.6 How do you convert encodings?
-test_str <- "São Paulo"
-validUTF8(test_str)
-converted_str <- iconv("São Paulo", from = "LATIN2", to = "UTF-8")
-
-converted_str
-validUTF8(converted_str)
-
-# Looks the same right?
-
-charToRaw(converted_str) # UTF-8 encoding
-charToRaw(test_str) # Latin-1 encoding
-
-# other languages
-validUTF8("法律")
-validUTF8("قانون")
-
-# In most cases, your text will probably already be in UTF-8. (e.g. Wikipedia corpora are!) 
-# In most cases, you want to convert your text to UTF-8, can handle most Latin and non-Latin script languages.
-
-# The authors of quanteda have also written a package called readtext() that can also deal with encodings in text corpora!
 
 # ============================================================================= #
 ####                                HEAP'S LAW                               ####
@@ -239,8 +158,10 @@ b <- c(-1, -2, -3)
 calculate_cosine_similarity(a, b)
 
 # Let's do it with texts
-obama_text <- as.character(corpus_subset(data_corpus_inaugural, President == "Obama"))
-lincoln_text <- as.character(corpus_subset(data_corpus_inaugural, President == "Lincoln"))
+obama_text <- as.character(corpus_subset(data_corpus_inaugural, 
+                                         President == "Obama"))
+lincoln_text <- as.character(corpus_subset(data_corpus_inaugural, 
+                                           President == "Lincoln"))
 
 # Make a dfm of these two
 obama_lincoln_dfm <- c(obama_text, lincoln_text) %>% 
@@ -251,8 +172,8 @@ obama_lincoln_dfm <- c(obama_text, lincoln_text) %>%
 
 # Calculate similarity
 simil_obama_lincoln_wpp <- textstat_simil(obama_lincoln_dfm, 
-                                                              margin = "documents", 
-                                                              method = "cosine")
+                                          margin = "documents",
+                                          method = "cosine")
 as.matrix(simil_obama_lincoln_wpp)
 
 # 6.2 Let's see how stopwords/stemming affect similarity
@@ -307,7 +228,8 @@ gutenberg_works() %>% filter(author == "Austen, Jane")
 
 # download "Emma"
 emma <- gutenberg_download(gutenberg_id = 158)
-#emma <- gutenberg_download(jane_austen$gutenberg_id[jane_austen$title == "Emma"], meta_fields = "title")  # add other meta information
+#emma <- gutenberg_download(jane_austen$gutenberg_id[jane_austen$title == "Emma"], 
+# meta_fields = "title")  # add other meta information
 
 # 7.2 stylest package: estimate speaker (author) style distinctiveness (vis-a-vis other authors)
 # see vignette: https://github.com/leslie-huang/stylest/blob/master/vignettes/stylest-vignette.md
@@ -325,29 +247,42 @@ unique(novels_excerpts$author)
 # note how the data is organized
 str(novels_excerpts)
 
-# (1) select most informative (discriminative) features (subsets vocab by frequency percentile)
-filter <- corpus::text_filter(drop_punct = TRUE, drop_number = TRUE)  # pre-processing choices
+# (1) select most informative (discriminative) features 
+# (subsets vocab by frequency percentile)
+filter <- corpus::text_filter(drop_punct = TRUE, 
+                              drop_number = TRUE)  # pre-processing choices
 set.seed(1984L)  # why set seed?
-vocab_custom <- stylest_select_vocab(novels_excerpts$text, novels_excerpts$author,  # fits n-fold cross-validation
-                                     filter = filter, smooth = 1, nfold = 10,
+vocab_custom <- stylest_select_vocab(novels_excerpts$text, 
+                                     novels_excerpts$author,  # fits n-fold cross-validation
+                                     filter = filter, 
+                                     smooth = 1, nfold = 10,
                                      cutoff_pcts = c(25, 50, 75, 99))
 
 vocab_custom$cutoff_pct_best  # percentile with best prediction rate
 vocab_custom$miss_pct  # rate of incorrectly predicted speakers of held-out texts
 
 # (2) subset features
-vocab_subset <- stylest_terms(novels_excerpts$text, novels_excerpts$author, vocab_custom$cutoff_pct_best , filter = filter) # USE SAME FILTER
+vocab_subset <- stylest_terms(novels_excerpts$text, 
+                              novels_excerpts$author, 
+                              vocab_custom$cutoff_pct_best , 
+                              filter = filter) # USE SAME FILTER
 
 # (3) fit model with "optimal" percentile threshold (i.e. feature subset)
-style_model <- stylest_fit(novels_excerpts$text, novels_excerpts$author, terms = vocab_subset, filter = filter)
+style_model <- stylest_fit(novels_excerpts$text, 
+                           novels_excerpts$author, 
+                           terms = vocab_subset, 
+                           filter = filter)
 
 # explore output
-head(stylest_term_influence(style_model, novels_excerpts$text, novels_excerpts$author))  # influential terms
+head(stylest_term_influence(style_model, 
+                            novels_excerpts$text, 
+                            novels_excerpts$author))  # influential terms
 
 str(style_model)
 authors <- unique(novels_excerpts$author)
 term_usage <- style_model$rate
-lapply(authors, function(x) head(term_usage[x,][order(-term_usage[x,])])) %>% setNames(authors)
+lapply(authors, function(x) head(term_usage[x,][order(-term_usage[x,])])) %>% 
+  setNames(authors)
 
 # (4) predict speaker of a new text
 emma <- novels_excerpts %>% 
@@ -357,11 +292,208 @@ pred <- stylest_predict(style_model, new_text)
 pred$predicted
 pred$log_probs
 
-#-----------------------------
-# 8 SOPHISTICATION
-#-----------------------------
-# motivation: flexibly measure the "sophistication" (ease of understanding) of political communication 
-# see paper: https://www.nyu.edu/projects/spirling/documents/BMS_complex.pdf
-#install.packages("sophistication")
-# see vignette: https://github.com/kbenoit/sophistication
-# key insight: use crowdsourcing
+
+
+# ============================================================================= #
+####                            LEXICAL DIVERSITY                            ####
+# ============================================================================= #
+
+# Load in data: Irish budget proposals from 2008-2012 ----
+# "speeches and document-level variables from the debate over the Irish budget".
+
+data("data_corpus_irishbudgets")
+irish_budget_texts <- texts(data_corpus_irishbudgets)
+
+# TTR 
+#############
+budget_tokens <- tokens(irish_budget_texts, 
+                        remove_punct = TRUE) 
+
+# Num tokens per document
+num_tokens <- lengths(budget_tokens)
+
+num_types <- ntype(budget_tokens)
+
+irish_budget_TTR <- num_types / num_tokens
+
+head(irish_budget_TTR)
+
+# Would you expect the budgets to become more or less diverse over time?
+# Mean per-document TTR scores by year, party
+####################################################
+
+TTR_by_year <- aggregate(irish_budget_TTR, 
+                         by = list(data_corpus_irishbudgets[["year"]]$year), 
+                         FUN = mean, na.rm = TRUE) %>% 
+  setNames(c("year", "TTR"))
+
+plot(TTR_by_year)
+
+aggregate(irish_budget_TTR, 
+          by = list(data_corpus_irishbudgets[["party"]]$party), 
+          FUN = mean) %>% 
+  setNames(c("party", "TTR"))
+
+
+# Calculate TTR score by year, party 
+###########################################
+
+# by year
+# textstat_lexdiv: "calculates the lexical diversity or complexity of text(s)" using any number of measures.'
+TTR <- textstat_lexdiv(budget_tokens, measure = "TTR")
+aggregate(TTR$TTR, 
+          by = list(data_corpus_irishbudgets[["year"]]$year), 
+          FUN = mean, na.rm = TRUE) %>% 
+  setNames(c("year", "TTR"))
+
+# Sidebar: using the "groups" parameter is how to group documents by a covariate -- note how this changes the ndocs of your corpus
+aggregate(TTR$TTR, 
+          by = list(data_corpus_irishbudgets[["party"]]$party), 
+          FUN = mean, na.rm = TRUE) %>% 
+  setNames(c("party", "TTR"))
+
+# Thoughts on TTR
+
+# ============================================================================= #
+####                            COMPLEXITY MEASURES                          ####
+# ============================================================================= #
+
+# FRE (https://en.wikipedia.org/wiki/Flesch–Kincaid_readability_tests)
+#########################################################################
+
+textstat_readability(data_corpus_irishbudgets, "Flesch") %>% head()
+
+textstat_readability(texts(data_corpus_irishbudgets, groups = "year"), "Flesch") 
+
+textstat_readability(texts(data_corpus_irishbudgets, groups = "party"), "Flesch")
+
+# Dale-Chall measure (https://en.wikipedia.org/wiki/Dale–Chall_readability_formula)
+#######################################################################################
+
+textstat_readability(data_corpus_irishbudgets, "Dale.Chall.old") %>% head()
+
+textstat_readability(texts(data_corpus_irishbudgets, 
+                           groups = "year"), "Dale.Chall.old")
+
+textstat_readability(texts(data_corpus_irishbudgets, 
+                           groups = "party"), measure = "Dale.Chall.old")
+
+# let's compare each measure
+#####################################
+
+all_readability_measures <- textstat_readability(data_corpus_irishbudgets, 
+                                                 c("Flesch", "Dale.Chall", 
+                                                   "SMOG", "Coleman.Liau", 
+                                                   "Fucks"))
+
+readability_matrix <- cbind(all_readability_measures$Flesch, 
+                            all_readability_measures$Dale.Chall, 
+                            all_readability_measures$SMOG, 
+                            all_readability_measures$Coleman.Liau, 
+                            all_readability_measures$Fucks)
+
+readability_cor <- cor(readability_matrix)
+rownames(readability_cor) <- c("Flesch", "Dale-Chall", "SMOG", "Coleman Liau", "Fucks")
+colnames(readability_cor) <- c("Flesch", "Dale-Chall", "SMOG", "Coleman Liau", "Fucks")
+readability_cor
+
+# ============================================================================= #
+####                              BOOTSTRAPPING                              ####
+# ============================================================================= #
+# there are packages in R that help with bootstrapping: 
+# e.g. https://cran.r-project.org/web/packages/boot/boot.pdf
+
+# data prep: remove smaller parties (parties with only 1 document)
+large_parties <- data_corpus_irishbudgets$documents %>% 
+  group_by(party) %>% 
+  tally() %>% 
+  arrange(-n) %>% 
+  filter(n > 1) %>% 
+  select(party) %>% 
+  unlist() %>% 
+  unname()
+irbudgetsCorpSub <- corpus_subset(data_corpus_irishbudgets, 
+                                  (party %in% large_parties))
+
+# convert corpus to df 
+irbudgets_df <- irbudgetsCorpSub$documents %>% 
+  select(texts, party, year) %>% 
+  mutate(year = as.integer(year))
+
+# Let's filter out any NAs
+irbudgets_df <- na.omit(irbudgets_df)
+
+# mean Flesch statistic per party
+flesch_point <- irbudgets_df$texts %>% 
+  textstat_readability(measure = "Flesch") %>% 
+  group_by(irbudgets_df$party) %>% 
+  summarise(mean_flesch = mean(Flesch)) %>% 
+  setNames(c("party", "mean")) %>% 
+  arrange(party)
+
+# ggplot point estimate
+ggplot(flesch_point, aes(x = party, y = mean, colour = party)) +
+  geom_point() +
+  coord_flip() + 
+  theme_bw() + 
+  scale_y_continuous(breaks=seq(floor(min(flesch_point$mean)), 
+                                ceiling(max(flesch_point$mean)), 
+                                by = 2)) +
+  xlab("") + ylab("Mean Fleisch Score by Party") + 
+  theme(legend.position = "none")
+
+# We will use a loop to bootstrap a sample of texts and subsequently calculate standard errors
+iters <- 10
+
+library(pbapply)
+# build function to be used in bootstrapping
+boot_flesch <- function(party_data){
+  N <- nrow(party_data)
+  bootstrap_sample <- sample_n(party_data, N, replace = TRUE)
+  readability_results <- textstat_readability(bootstrap_sample$texts, measure = "Flesch")
+  return(mean(readability_results$Flesch))
+}
+
+# apply function to each party
+boot_flesch_by_party <- pblapply(large_parties, function(x){
+  sub_data <- irbudgets_df %>% filter(party == x)
+  output_flesch <- lapply(1:iters, function(i) boot_flesch(sub_data))
+  return(unlist(output_flesch))
+})
+names(boot_flesch_by_party) <- large_parties
+
+# compute mean and std.errors
+party_means <- lapply(boot_flesch_by_party, mean) %>% 
+  unname() %>% 
+  unlist()
+party_ses <- lapply(boot_flesch_by_party, sd) %>% 
+  unname() %>% 
+  unlist() # bootstrap standard error = sample standard deviation bootstrap distribution
+
+# Plot results--party
+plot_dt <- tibble(party = large_parties, mean = party_means, ses = party_ses)
+
+# confidence intervals
+interval1 <- -qnorm((1-0.9)/2)   # 90% multiplier
+interval2 <- -qnorm((1-0.95)/2)  # 95% multiplier
+
+# ggplot point estimate + variance
+ggplot(plot_dt, aes(colour = party)) +
+  geom_linerange(aes(x = party, 
+                     ymin = mean - ses*interval1, 
+                     ymax = mean + ses*interval1), 
+                 lwd = 1, position = position_dodge(width = 1/2)) +
+  geom_pointrange(aes(x = party, 
+                      y = mean, 
+                      ymin = mean - ses*interval2, 
+                      ymax = mean + ses*interval2), 
+                  lwd = 1/2, position = position_dodge(width = 1/2), 
+                  shape = 21, fill = "WHITE") +
+  coord_flip() + 
+  theme_bw() + 
+  scale_y_continuous(breaks=seq(floor(min(plot_dt$mean)), 
+                                ceiling(max(plot_dt$mean)), 
+                                by = 2)) +
+  xlab("") + ylab("Mean Fleisch Score by Party") + 
+  theme(legend.position = "none")
+
