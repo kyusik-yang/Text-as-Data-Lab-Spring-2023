@@ -26,7 +26,6 @@ library(quanteda)
 
 pacman::p_load(dplyr,
                ggplot2,
-               devtools,
                quanteda.textplots,
                quanteda.textstats) 
 
@@ -96,8 +95,6 @@ packageVersion("quanteda")
 # THERE ARE OTHER WAYS to organize text data
 # TAKE A LOOK AT: https://www.tidytextmining.com/tidytext.html
 
-# other popular text package with similar features: tm
-
 # 1.1 load the State of the Union (SOTU) corpus and look at a summary 
 ##########################################################################
 
@@ -134,13 +131,14 @@ token_plot
 ########################
 summary(corpus_subset(sotu, President == "Trump"))
 trump_sotu <- corpus_subset(sotu, President == "Trump")
+trump_sotu
 
 # keep only the text of the the 2018 SOTU
 trump_2018_text <- as.character(trump_sotu)[2]
 # previous quanteda: texts(trump_sotu)[2]
 
 # similar to
-trump_2018_text <- trump_sotu[2]
+trump_2018_text <- trump_sotu[2] # note this is still a corpus object
 
 # 1.3 Exploring corpus texts
 ####################################
@@ -245,7 +243,7 @@ topfeatures(trump_2018_dfm)
 ####                        PREPROCESSING (~FEATURE ENGINEERING)             ####
 # ============================================================================= #
 
-# since last release: pre-processing done prior to dfm 
+# since last release: most preprocessing done prior to dfm 
 ?dfm  # see all options
 # NOTE: lowercase argument is by default TRUE
 
@@ -299,6 +297,7 @@ full_dfm <- tokens(sotu, remove_punct = TRUE) %>%
 head(full_dfm) # notice sparsity
 topfeatures(full_dfm)
 topfeatures(full_dfm[nrow(full_dfm),]) # for a specific document
+topfeatures(full_dfm["Washington-1793",])
 
 # 4.1 tfidf - Frequency weighting
 ####################################
@@ -411,10 +410,11 @@ see("abc ABC 123\t.!?\\(){}\n", "\\s")
 # grep: returns a vector of the indices of the elements of x that yielded a match
 s_index <- grep(" s ", as.character(sotu))
 head(s_index)
+#see(as.character(sotu)[107], " s ")
 
 thank_index <- grep("^Thank", as.character(sotu))
 thank_index
-sotu[[215]]
+see(as.character(sotu)[215], "^Thank")
 
 # grepl: returns a logical vector (match or not for each element of x).
 s_index <- grepl(" s ", as.character(sotu))
@@ -447,8 +447,8 @@ str_detect(sotu, pattern = " s ")
 word(sotu, start = 1)
 
 # Extract string before certain character
-str_extract(sotu[[1]], "^(.+?)(?= Representatives)") # excluding pattern
-str_extract(sotu[[1]], "^(.+?)Representatives") # including pattern
+str_extract(sotu[[1]], "^(.+)(?= Representatives)") # excluding pattern
+str_extract(sotu[[1]], "^(.+)Representatives") # including pattern
 
 # in general for these problems: Google is your friend!
 
@@ -463,7 +463,7 @@ str_extract(sotu[[1]], "^(.+?)Representatives") # including pattern
 library(preText)
 
 # Run at home (takes a few minutes to run)
-# Example below taken from preText vignette: https://cran.r-project.org/web/packages/preText/vignettes/getting_started_with_preText.html
+# Example below taken from preText vignette: http://www.mjdenny.com/getting_started_with_preText.html
 
 preprocessed_documents <- factorial_preprocessing(
   sotu[1:50],
