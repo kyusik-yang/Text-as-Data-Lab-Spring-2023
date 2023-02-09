@@ -27,7 +27,8 @@ library(quanteda)
 pacman::p_load(dplyr,
                ggplot2,
                quanteda.textplots,
-               quanteda.textstats) 
+               quanteda.textstats,
+               quanteda.corpora) 
 
 
 # 1.3 Devtools and the quanteda corpus
@@ -106,6 +107,7 @@ sotu <- data_corpus_sotu
 #   (3) extras (settings)
 
 head(docvars(sotu))  # document-level variables (called docvars)
+dvars <- docvars(sotu)
 meta(sotu)  # corpus-level variables
 
 # ndoc identifies the number of documents in a corpus
@@ -252,6 +254,7 @@ trump_2018_dfm <- tokens(trump_2018_text, remove_punct = TRUE) %>%
   dfm()
 dim(trump_2018_dfm)
 trump_2018_dfm[, 1:10]
+topfeatures(trump_2018_dfm)
 
 # stemming
 trump_2018_dfm_s <- tokens(trump_2018_text, remove_punct = TRUE) %>% 
