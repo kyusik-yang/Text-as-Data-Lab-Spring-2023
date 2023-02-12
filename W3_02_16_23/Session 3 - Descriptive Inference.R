@@ -18,7 +18,8 @@ rm(list = ls())
 pacman::p_load(dplyr,
                quanteda,
                quanteda.corpora,
-               quanteda.textstats) 
+               quanteda.textstats,
+               ggplot2) 
 
 # gutenbergr: https://www.gutenberg.org/, https://cran.r-project.org/web/packages/gutenbergr/index.html 
 # stylest: https://leslie-huang.github.io/stylest/
@@ -67,6 +68,8 @@ k * (Tee)^b
 ####                                ZIPF'S LAW                               ####
 # ============================================================================= #
 # Term frequency in corpus and rank
+# tells us about distribution of terms
+# intuition: frequency decreases rapidly with rank
 
 # x-axis: log of ranks 1 through 100
 # y-axis log of frequency of top 100 terms from the DFM
@@ -78,8 +81,9 @@ plot(log10(1:100), log10(topfeatures(inaug_dfm, 100)),
 # Fits a linear regression to check if slope is approx -1.0
 regression <- lm(log10(topfeatures(inaug_dfm, 100)) ~ log10(1:100))
 
-# Adds the fitted line from regression to the plot
+# Adds the fitted line from regression (red) and relationship predicted by Zipf's law (black) to the plot 
 abline(regression, col = "red")
+abline(a = regression$coefficients["(Intercept)"], b = -1, col = "black")
 
 # Returns the 95% confidence intervals for the regression coefficients
 confint(regression)
@@ -100,10 +104,9 @@ plot(log10(1:100), log10(topfeatures(mydfm, 100)),
 # Regression to check if slope is approx -1.0
 regression <- lm(log10(topfeatures(mydfm, 100)) ~ log10(1:100))
 abline(regression, col = "red")
+abline(a = regression$coefficients["(Intercept)"], b = -1, col = "black")
 confint(regression)
 summary(regression)
-
-# Zipf's law as a feature selection tool (e.g. http://www.jmlr.org/papers/volume3/forman03a/forman03a_full.pdf)
 
 plot(1:100, topfeatures(inaug_dfm, 100),
      xlab = "rank", ylab = "frequency", 
@@ -112,21 +115,6 @@ plot(1:100, topfeatures(inaug_dfm, 100),
 plot(1:100, topfeatures(mydfm, 100),
      xlab = "rank", ylab = "frequency", 
      main = "Top 100 Words in U.S. Presidential Inaugural Speech Corpus (w/o stopwords)")
-
-
-
-# ============================================================================= #
-####                            KEYWORDS IN CONTEXT                          ####
-# ============================================================================= #
-## good way to summarize info about a topic
-
-data_corpus_inaugural %>% 
-  tokens() %>% 
-  kwic("America", 3, case_insensitive = FALSE)
-
-help(kwic)
-
-# Suggested terms?
 
 
 
@@ -207,16 +195,23 @@ textstat_simil(several_inaug_dfm,
                margin = "documents", 
                method = "correlation")
 
-# Other options available: Manhattan distance, cosine, etc.
+# Other options available: jaccard, etc.
 ?textstat_simil
+
+# For distance metrics: textstat_dist
+textstat_dist(several_inaug_dfm, 
+               several_inaug_dfm[several_inaug_dfm@docvars$docname_=="2009-Obama",], 
+               margin = "documents", 
+               method = "manhattan")
 
 # ============================================================================= #
 ####                                  STYLE                                  ####
 # ============================================================================= #
 
-# 7.1 data collection (to be used in HW1)
 rm(list = ls())
-# 7.1 Project Gutenberg: http://www.gutenberg.org/wiki/Main_Page
+
+# Project Gutenberg: https://www.gutenberg.org/
+###################################################
 # collection of (machine readable) novels and other texts + they have an R package!
 #install.packages("gutenbergr")
 # for more info refer to: https://cran.r-project.org/web/packages/gutenbergr/vignettes/intro.html
@@ -231,9 +226,15 @@ emma <- gutenberg_download(gutenberg_id = 158)
 #emma <- gutenberg_download(jane_austen$gutenberg_id[jane_austen$title == "Emma"], 
 # meta_fields = "title")  # add other meta information
 
-# 7.2 stylest package: estimate speaker (author) style distinctiveness (vis-a-vis other authors)
-# see vignette: https://github.com/leslie-huang/stylest/blob/master/vignettes/stylest-vignette.md
-# early draft version of paper using this package: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3235506
+# stylest package: estimate speaker (author) style distinctiveness (vis-a-vis other authors)
+################################################################################################
+
+# based on relative usage rate of terms --> posterior probability of authorship
+# eta_{author,term} = log Pr(term|author)
+# distinctiveness: expected value of log posterior odds ratio, i.e. E(Pr(author1|term) - Pr(author2|term))
+
+# see vignette: https://leslie-huang.github.io/stylest/articles/stylest-vignette.html
+# paper using this package: https://doi.org/10.1017/pan.2019.49 
 #install.packages("stylest")
 # source for this code: package vignette
 library(stylest)
@@ -247,7 +248,8 @@ unique(novels_excerpts$author)
 # note how the data is organized
 str(novels_excerpts)
 
-# (1) select most informative (discriminative) features 
+# (1) select most informative (discriminative) features: uses n-fold cross-validation to identify the set of terms 
+# that maximizes the model’s rate of predicting the speakers of out-of-sample texts
 # (subsets vocab by frequency percentile)
 filter <- corpus::text_filter(drop_punct = TRUE, 
                               drop_number = TRUE)  # pre-processing choices
@@ -256,10 +258,11 @@ vocab_custom <- stylest_select_vocab(novels_excerpts$text,
                                      novels_excerpts$author,  # fits n-fold cross-validation
                                      filter = filter, 
                                      smooth = 1, nfold = 10,
-                                     cutoff_pcts = c(25, 50, 75, 99))
+                                     cutoff_pcts = c(25, 50, 60, 70, 80, 90))
 
 vocab_custom$cutoff_pct_best  # percentile with best prediction rate
 vocab_custom$miss_pct  # rate of incorrectly predicted speakers of held-out texts
+apply(vocab_custom$miss_pct, 2, mean)
 
 # (2) subset features
 vocab_subset <- stylest_terms(novels_excerpts$text, 
@@ -272,22 +275,20 @@ style_model <- stylest_fit(novels_excerpts$text,
                            novels_excerpts$author, 
                            terms = vocab_subset, 
                            filter = filter)
-
 # explore output
+str(style_model)
+term_usage <- style_model$rate
+authors <- unique(novels_excerpts$author)
+lapply(authors, function(x) head(term_usage[x,][order(-term_usage[x,])])) %>% 
+  setNames(authors)
+# distinctiveness of each term for authors
 head(stylest_term_influence(style_model, 
                             novels_excerpts$text, 
                             novels_excerpts$author))  # influential terms
 
-str(style_model)
-authors <- unique(novels_excerpts$author)
-term_usage <- style_model$rate
-lapply(authors, function(x) head(term_usage[x,][order(-term_usage[x,])])) %>% 
-  setNames(authors)
 
 # (4) predict speaker of a new text
-emma <- novels_excerpts %>% 
-  filter(title == "Emma")
-new_text <- emma$text[30:75] %>% paste(., collapse = "") 
+new_text <- emma$text[500:600] %>% paste(., collapse = "") 
 pred <- stylest_predict(style_model, new_text)
 pred$predicted
 pred$log_probs
@@ -298,57 +299,42 @@ pred$log_probs
 ####                            LEXICAL DIVERSITY                            ####
 # ============================================================================= #
 
+rm(list = ls())
 # Load in data: Irish budget proposals from 2008-2012 ----
 # "speeches and document-level variables from the debate over the Irish budget".
 
 data("data_corpus_irishbudgets")
-irish_budget_texts <- texts(data_corpus_irishbudgets)
+irish_budget_texts <- as.character(data_corpus_irishbudgets)
 
-# TTR 
-#############
-budget_tokens <- tokens(irish_budget_texts, 
-                        remove_punct = TRUE) 
+# TTR (by hand)
+####################
+budget_dfm <- tokens(irish_budget_texts, 
+                        remove_punct = TRUE) %>% dfm()
 
 # Num tokens per document
-num_tokens <- lengths(budget_tokens)
+num_tokens <- ntoken(budget_dfm)
 
-num_types <- ntype(budget_tokens)
+num_types <- ntype(budget_dfm)
 
 irish_budget_TTR <- num_types / num_tokens
 
 head(irish_budget_TTR)
 
 # Would you expect the budgets to become more or less diverse over time?
-# Mean per-document TTR scores by year, party
-####################################################
-
-TTR_by_year <- aggregate(irish_budget_TTR, 
-                         by = list(data_corpus_irishbudgets[["year"]]$year), 
-                         FUN = mean, na.rm = TRUE) %>% 
-  setNames(c("year", "TTR"))
-
-plot(TTR_by_year)
-
-aggregate(irish_budget_TTR, 
-          by = list(data_corpus_irishbudgets[["party"]]$party), 
-          FUN = mean) %>% 
-  setNames(c("party", "TTR"))
-
-
 # Calculate TTR score by year, party 
 ###########################################
 
 # by year
 # textstat_lexdiv: "calculates the lexical diversity or complexity of text(s)" using any number of measures.'
-TTR <- textstat_lexdiv(budget_tokens, measure = "TTR")
+TTR <- textstat_lexdiv(budget_dfm, measure = "TTR",
+                       remove_numbers = F, remove_punct = F, remove_symbols = F)
 aggregate(TTR$TTR, 
-          by = list(data_corpus_irishbudgets[["year"]]$year), 
+          by = list(docvars(data_corpus_irishbudgets)$year), 
           FUN = mean, na.rm = TRUE) %>% 
   setNames(c("year", "TTR"))
 
-# Sidebar: using the "groups" parameter is how to group documents by a covariate -- note how this changes the ndocs of your corpus
 aggregate(TTR$TTR, 
-          by = list(data_corpus_irishbudgets[["party"]]$party), 
+          by = list(docvars(data_corpus_irishbudgets)$party), 
           FUN = mean, na.rm = TRUE) %>% 
   setNames(c("party", "TTR"))
 
@@ -363,20 +349,20 @@ aggregate(TTR$TTR,
 
 textstat_readability(data_corpus_irishbudgets, "Flesch") %>% head()
 
-textstat_readability(texts(data_corpus_irishbudgets, groups = "year"), "Flesch") 
+corpus_y <- corpus_group(data_corpus_irishbudgets, groups = docvars(data_corpus_irishbudgets)$year)
+textstat_readability(corpus_y, "Flesch") 
 
-textstat_readability(texts(data_corpus_irishbudgets, groups = "party"), "Flesch")
+corpus_p <- corpus_group(data_corpus_irishbudgets, groups = docvars(data_corpus_irishbudgets)$party)
+textstat_readability(corpus_p, "Flesch")
 
 # Dale-Chall measure (https://en.wikipedia.org/wiki/Dale–Chall_readability_formula)
 #######################################################################################
 
 textstat_readability(data_corpus_irishbudgets, "Dale.Chall.old") %>% head()
 
-textstat_readability(texts(data_corpus_irishbudgets, 
-                           groups = "year"), "Dale.Chall.old")
+textstat_readability(corpus_y, "Dale.Chall.old")
 
-textstat_readability(texts(data_corpus_irishbudgets, 
-                           groups = "party"), measure = "Dale.Chall.old")
+textstat_readability(corpus_p, measure = "Dale.Chall.old")
 
 # let's compare each measure
 #####################################
@@ -384,15 +370,10 @@ textstat_readability(texts(data_corpus_irishbudgets,
 all_readability_measures <- textstat_readability(data_corpus_irishbudgets, 
                                                  c("Flesch", "Dale.Chall", 
                                                    "SMOG", "Coleman.Liau", 
-                                                   "Fucks"))
+                                                   "Fucks")) %>% 
+  tidylog::drop_na()
 
-readability_matrix <- cbind(all_readability_measures$Flesch, 
-                            all_readability_measures$Dale.Chall, 
-                            all_readability_measures$SMOG, 
-                            all_readability_measures$Coleman.Liau, 
-                            all_readability_measures$Fucks)
-
-readability_cor <- cor(readability_matrix)
+readability_cor <- cor(all_readability_measures[,-1])
 rownames(readability_cor) <- c("Flesch", "Dale-Chall", "SMOG", "Coleman Liau", "Fucks")
 colnames(readability_cor) <- c("Flesch", "Dale-Chall", "SMOG", "Coleman Liau", "Fucks")
 readability_cor
@@ -403,8 +384,8 @@ readability_cor
 # there are packages in R that help with bootstrapping: 
 # e.g. https://cran.r-project.org/web/packages/boot/boot.pdf
 
-# data prep: remove smaller parties (parties with only 1 document)
-large_parties <- data_corpus_irishbudgets$documents %>% 
+# data prep: remove smaller parties (parties with only 1 document) & remove NA's
+large_parties <- docvars(data_corpus_irishbudgets) %>% 
   group_by(party) %>% 
   tally() %>% 
   arrange(-n) %>% 
@@ -414,19 +395,13 @@ large_parties <- data_corpus_irishbudgets$documents %>%
   unname()
 irbudgetsCorpSub <- corpus_subset(data_corpus_irishbudgets, 
                                   (party %in% large_parties))
-
-# convert corpus to df 
-irbudgets_df <- irbudgetsCorpSub$documents %>% 
-  select(texts, party, year) %>% 
-  mutate(year = as.integer(year))
-
-# Let's filter out any NAs
-irbudgets_df <- na.omit(irbudgets_df)
+irbudgetsCorpSub <- irbudgetsCorpSub[-which(as.character(irbudgetsCorpSub)=="")]
 
 # mean Flesch statistic per party
-flesch_point <- irbudgets_df$texts %>% 
+flesch_point <- irbudgetsCorpSub %>% 
   textstat_readability(measure = "Flesch") %>% 
-  group_by(irbudgets_df$party) %>% 
+  cbind(docvars(irbudgetsCorpSub)) %>% 
+  group_by(party) %>% 
   summarise(mean_flesch = mean(Flesch)) %>% 
   setNames(c("party", "mean")) %>% 
   arrange(party)
@@ -442,8 +417,8 @@ ggplot(flesch_point, aes(x = party, y = mean, colour = party)) +
   xlab("") + ylab("Mean Fleisch Score by Party") + 
   theme(legend.position = "none")
 
-# We will use a loop to bootstrap a sample of texts and subsequently calculate standard errors
-iters <- 10
+# We will use a loop to bootstrap a sample of documents and subsequently calculate standard errors
+iters <- 10 # usually want to at least use 100
 
 library(pbapply)
 # build function to be used in bootstrapping
@@ -456,7 +431,12 @@ boot_flesch <- function(party_data){
 
 # apply function to each party
 boot_flesch_by_party <- pblapply(large_parties, function(x){
-  sub_data <- irbudgets_df %>% filter(party == x)
+  # subset corpus by party
+  sub_data <- corpus_subset(irbudgetsCorpSub, party == x)
+  # create data frame (easier to work with for bootstrapping)
+  sub_data <- cbind(texts = as.character(sub_data),
+                    docvars(sub_data)) %>% 
+    as.data.frame()
   output_flesch <- lapply(1:iters, function(i) boot_flesch(sub_data))
   return(unlist(output_flesch))
 })
