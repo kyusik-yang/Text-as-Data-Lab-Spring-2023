@@ -29,7 +29,7 @@ pacman::p_load(dplyr,
 # ============================================================================= #
 # Token-type relationship in corpus
 # How might pre-processing affect this relationship? 
-# Think about reducing the dimensionality of the problem.
+# Think about the growth rate of the vocabulary.
 
 # M = kT^b
 
@@ -123,7 +123,7 @@ plot(1:100, topfeatures(mydfm, 100),
 # ============================================================================= #
 # This helps illustrate the value of the vector representation
 
-# 6.1 Cosine similarity--take the dot product of two vectors
+# Cosine similarity--take the dot product of two vectors
 # cos = x*y/|x||y|
 calculate_cosine_similarity <- function(vec1, vec2) { 
   nominator <- vec1 %*% vec2  # %*% specifies dot product rather than entry by entry multiplication (we could also do: sum(x * y))
@@ -164,11 +164,11 @@ simil_obama_lincoln_wpp <- textstat_simil(obama_lincoln_dfm,
                                           method = "cosine")
 as.matrix(simil_obama_lincoln_wpp)
 
-# 6.2 Let's see how stopwords/stemming affect similarity
+# Let's see how stopwords/stemming affect similarity
 
 obama_lincoln_nopp <- c(obama_text, lincoln_text) %>% 
   tokens() %>% 
-  dfm()
+  dfm() 
 
 # Calculate similarity
 
@@ -231,7 +231,7 @@ emma <- gutenberg_download(gutenberg_id = 158)
 
 # based on relative usage rate of terms --> posterior probability of authorship
 # eta_{author,term} = log Pr(term|author)
-# distinctiveness: expected value of log posterior odds ratio, i.e. E(Pr(author1|term) - Pr(author2|term))
+# distinctiveness: expected value of log posterior odds ratio, i.e. E(log(Pr(author1|term) - Pr(author2|term)))
 
 # see vignette: https://leslie-huang.github.io/stylest/articles/stylest-vignette.html
 # paper using this package: https://doi.org/10.1017/pan.2019.49 
@@ -349,6 +349,7 @@ aggregate(TTR$TTR,
 
 textstat_readability(data_corpus_irishbudgets, "Flesch") %>% head()
 
+# for groups of corpus, we can use corpus_groups; but note that this changes number of documents!
 corpus_y <- corpus_group(data_corpus_irishbudgets, groups = docvars(data_corpus_irishbudgets)$year)
 textstat_readability(corpus_y, "Flesch") 
 
@@ -443,12 +444,8 @@ boot_flesch_by_party <- pblapply(large_parties, function(x){
 names(boot_flesch_by_party) <- large_parties
 
 # compute mean and std.errors
-party_means <- lapply(boot_flesch_by_party, mean) %>% 
-  unname() %>% 
-  unlist()
-party_ses <- lapply(boot_flesch_by_party, sd) %>% 
-  unname() %>% 
-  unlist() # bootstrap standard error = sample standard deviation bootstrap distribution
+party_means <- sapply(boot_flesch_by_party, mean)
+party_ses <- sapply(boot_flesch_by_party, sd) # bootstrap standard error = sample standard deviation bootstrap distribution
 
 # Plot results--party
 plot_dt <- tibble(party = large_parties, mean = party_means, ses = party_ses)

@@ -35,12 +35,17 @@ editor_options:
 
 ```{r prelim, include=FALSE, message=FALSE, results='hide'}
 rm(list=ls())
-
+pacman::p_load(quanteda,
+               quanteda.corpora,
+               quanteda.textstats,
+               dplyr,
+               ggplot2,
+               stringr)
 
 ```
 
 
-
+You can simply type your answer outside of code junks. 
 
 ```{r datawrangle}
 

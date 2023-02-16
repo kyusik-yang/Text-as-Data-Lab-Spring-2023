@@ -1,0 +1,31 @@
+---
+title: "Homework XXX - Text as Data"
+author: "Your Name"
+date: "XXXX 2023"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r echo = TRUE, message = FALSE}
+rm(list=ls())
+pacman::p_load(quanteda,
+               quanteda.corpora,
+               quanteda.textstats,
+               dplyr,
+               ggplot2,
+               stringr)
+```
+
+## Question 1
+
+```{r echo = TRUE}
+2 + 2
+```
+
+
+You can simply type your answer outside of code junks. 
+
