@@ -2,7 +2,9 @@
 title: "Some Background on the `stylest` package"
 author: "Elisa Wirsching"
 date: "February 16, 2023"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include = FALSE}
