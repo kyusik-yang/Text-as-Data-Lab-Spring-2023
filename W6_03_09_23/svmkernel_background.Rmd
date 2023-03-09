@@ -93,7 +93,7 @@ We have seen how higher dimensional transformations can allow us to separate dat
 
 We therefore use the "kernel trick". To understand this, remember that SVM does not need to "know" $\mathbf{x} \to f(\mathbf{x})$, i.e. the exact mapping of $\mathbf{x}$. It is sufficient to know the relationship of the transformed data points $f(\mathbf{x}) vs. f(\mathbf{x'})$, i.e. $f(\mathbf{x})^{T}f(\mathbf{x'})$. That is, we take the distances between observations implicitly and use them for our classification. 
 
-In kernel methods, we represent data $X$ with a $n \times n$ matrix of pairwise similarity comparisons where entries $(i, j)$ are defined by the kernel function $k(\mathbf{x_i}, \mathbf{y_i})$. More formally, for data $\mathbf{x}, \mathbf{z} \in X$ and a mapping $\phi: X \to \mathbb{R}^n$, we have
+In kernel methods, we represent data $X$ with a $n \times n$ matrix of pairwise similarity comparisons where entries $(i, j)$ are defined by the kernel function $k(\mathbf{x_i}, \mathbf{z_i})$. This means, a kernel function accepts inputs in the lower dimensional space and returns the dot product of transformed vectors in higher dimensional space. More formally, for data $\mathbf{x}, \mathbf{z} \in X$ and a mapping $\phi: X \to \mathbb{R}^n$, we have
 
 \begin{align}
 k(\mathbf{x}, \mathbf{z}) = \phi(\mathbf{x})^{T} \phi(\mathbf{z})
@@ -107,4 +107,4 @@ Let's show this with our example:
 
 The bottom line is that using this trick we are finding the optimal separating hyperplane in this higher dimensional space without having to calculate or in reality even know anything about $\phi(\mathbf{x})$.
 
-These examples and explanation is inspired by [this post](https://towardsdatascience.com/the-kernel-trick-c98cdbcaeb3f#:~:text=The%20%E2%80%9Ctrick%E2%80%9D%20is%20that%20kernel,the%20data%20by%20these%20transformed).
+These examples and explanations are inspired by [this post](https://towardsdatascience.com/the-kernel-trick-c98cdbcaeb3f#:~:text=The%20%E2%80%9Ctrick%E2%80%9D%20is%20that%20kernel,the%20data%20by%20these%20transformed).
