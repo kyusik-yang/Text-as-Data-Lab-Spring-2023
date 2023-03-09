@@ -1,0 +1,110 @@
+---
+title: "Some Background on SVM with Kernel Tricks"
+author: "Elisa Wirsching"
+date: "March 9, 2023"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# What Problem are We Trying to Solve?
+
+- SVM is a simple and often effective method to separate data points into classes using lines/hyperplanes
+- However, high-dimensional data are often not linearly separable
+- Work-around: First apply a non-linear, high-dimensional transformation to the data points before applying SVM $\to$ Achieve non-linear decision boundary while using SVM
+- Great, problem solved? Not really, because high-dimensional transformations are computationally costly
+- Kernel methods allow us to get distance measures of data points in high-dimensional space without having to locate the data points themselves
+
+
+# Running Example
+
+Let's assume with have the following data
+
+```{r, eval = T, echo = F, message = F, warning=F}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+```
+
+```{r}
+
+# simulate data
+circles <- function(n, mu, sigma) {
+    lr <- Map(rlnorm, n = n, meanlog = mu, sdlog = sigma)
+    N <- length(lr)
+    n <- lengths(lr, FALSE)
+    data.frame(group = rep.int(gl(N, 1L), n),
+               r = unlist(lr, FALSE, FALSE),
+               theta = runif(sum(n), 0, 2 * pi))
+}
+
+set.seed(789342)
+d <- circles(n = c(100, 100), mu = log(c(1, 2)), sigma = c(0.1, 0.1)) %>% 
+  mutate(x1 = r * cos(theta),
+         x2 = r * sin(theta))
+
+# plot non-transformed data in two dimensions
+ggplot(d, aes(x = x1, y = x2, color = group)) +
+  geom_point() +
+  scale_color_manual(values = c('#BF382A', '#0C4B8E')) +
+  theme(legend.position = "none")
+
+
+
+```
+
+As we have seen in lecture, this is impossible to separate linearly. Let's apply a 2nd degree polynomial mapping to the data. That is, we apply the following transformation: 
+
+\begin{align}
+\phi(\mathbf{x}) = \phi\begin{pmatrix}
+  x_1 \\ 
+  x_2
+\end{pmatrix} = \begin{pmatrix} x_1^2 \\ \sqrt{2} x_1 x_2 \\ x_2^2 \end{pmatrix}
+\end{align}
+
+```{r, warning = F, message = F}
+
+poli <- function(x1, x2){
+  transform <- data.frame(x1 = x1^2, x2 = sqrt(2)*x1*x2, x3 = x2^2)
+  return(transform)
+}
+
+out <- purrr::map2_dfr(d$x1, d$x2, poli) %>% 
+  mutate(group = d$group)
+
+fig <- plot_ly(out, x = ~x1, y = ~x2, z = ~x3, color = ~group, 
+               colors = c('#BF382A', '#0C4B8E'))
+scene <- list(camera = list(eye = list(x = 1.25, y = -1.25, z = 0)))
+fig <- fig %>% add_markers(marker = list(size = 3)) %>% layout(scene = scene)
+
+fig
+
+```
+
+
+# Kernel Trick
+
+We have seen how higher dimensional transformations can allow us to separate data linearly and make classification predictions. However, in practice, there might be many features in the data and applying transformations that involve many polynomial combinations of these features will lead to extremely high and impractical computational costs.
+
+We therefore use the "kernel trick". To understand this, remember that SVM does not need to "know" $\mathbf{x} \to f(\mathbf{x})$, i.e. the exact mapping of $\mathbf{x}$. It is sufficient to know the relationship of the transformed data points $f(\mathbf{x}) vs. f(\mathbf{x'})$, i.e. $f(\mathbf{x})^{T}f(\mathbf{x'})$. That is, we take the distances between observations implicitly and use them for our classification. 
+
+In kernel methods, we represent data $X$ with a $n \times n$ matrix of pairwise similarity comparisons where entries $(i, j)$ are defined by the kernel function $k(\mathbf{x_i}, \mathbf{y_i})$. More formally, for data $\mathbf{x}, \mathbf{z} \in X$ and a mapping $\phi: X \to \mathbb{R}^n$, we have
+
+\begin{align}
+k(\mathbf{x}, \mathbf{z}) = \phi(\mathbf{x})^{T} \phi(\mathbf{z})
+\end{align}
+
+Let's show this with our example:
+
+\begin{align}
+\phi(\mathbf{a})^T \phi(\mathbf{b}) &= \begin{pmatrix} a_1^2 \\ \sqrt{2} a_1 a_2 \\ a_2^2 \end{pmatrix}^{T} \begin{pmatrix} b_1^2 \\ \sqrt{2} b_1 b_2 \\ b_2^2 \end{pmatrix} \\ &= a_1^2 b_1^2 + 2a_1 b_1 a_2 b_2 + a_2^2 b_2^2 \\ &= (a_1 b_1 + a_2 b_2)^2 \\ &= \begin{pmatrix} a_1 \\ a_2 \end{pmatrix}^{T} \begin{pmatrix} b_1 \\ b_2 \end{pmatrix} = \\ &= (\mathbf{a}^T \mathbf{b})^2 = k(\mathbf{a}, \mathbf{b})
+\end{align}
+
+The bottom line is that using this trick we are finding the optimal separating hyperplane in this higher dimensional space without having to calculate or in reality even know anything about $\phi(\mathbf{x})$.
+
+These examples and explanation is inspired by [this post](https://towardsdatascience.com/the-kernel-trick-c98cdbcaeb3f#:~:text=The%20%E2%80%9Ctrick%E2%80%9D%20is%20that%20kernel,the%20data%20by%20these%20transformed).
