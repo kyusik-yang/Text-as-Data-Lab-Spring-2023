@@ -120,6 +120,7 @@ cat(
 trctrl <- trainControl(method = "cv",
                        number = 5)
 
+tunegrid <- expand.grid(.C = seq(from = 0.1, to = 5.1, by = 0.5))
 # Also available: Leave One Out CV
 #trctrl <- trainControl(method = "LOOCV", p = 0.8)
 
@@ -127,7 +128,10 @@ trctrl <- trainControl(method = "cv",
 svm_mod_linear <- train(x = train_x,
                         y = train_y,
                         method = "svmLinear",
+                        tuneGrid = tunegrid,
                         trControl = trctrl)
+print(svm_mod_linear)
+plot(svm_mod_linear)
 
 # predict on heldout validation data
 svm_linear_pred <- predict(svm_mod_linear, newdata = test_x)
@@ -147,8 +151,8 @@ svm_mod_radial <- train(x = train_x,
                         method = "svmRadial",
                         trControl = trctrl)
 
-svm_radial_pred <- predict(svm_mod_radial, newdata = val_x)
-svm_radial_cmat <- confusionMatrix(svm_radial_pred, val_y)
+svm_radial_pred <- predict(svm_mod_radial, newdata = test_x)
+svm_radial_cmat <- confusionMatrix(svm_radial_pred, test_y)
 
 cat(
   "Baseline Accuracy: ", baseline_acc, "\n",
