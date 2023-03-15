@@ -120,7 +120,9 @@ cat(
 trctrl <- trainControl(method = "cv",
                        number = 5)
 
+# we need to define a grid of possible parameter values to search over
 tunegrid <- expand.grid(.C = seq(from = 0.1, to = 5.1, by = 0.5))
+
 # Also available: Leave One Out CV
 #trctrl <- trainControl(method = "LOOCV", p = 0.8)
 
