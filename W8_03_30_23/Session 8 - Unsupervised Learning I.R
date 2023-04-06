@@ -26,6 +26,7 @@ pacman::p_load(quanteda,
 # some terminology
 # -------------------
 
+# what does PCA do?
 # what are PCA (factor) loadings?
 # what are PCA scores?
 
@@ -34,10 +35,14 @@ pacman::p_load(quanteda,
 # ------------------------------------------
 
 # see: http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/118-principal-component-analysis-in-r-prcomp-vs-princomp/
-?prcomp # uses the singular value decomposition approach: examines the covariances/correlations between individuals
-?princomp # uses the spectral decomposition approach: examines the covariances/correlations between variables (need more individuals than variables)
+?prcomp # uses the singular value decomposition approach: 
+# examines the covariances/correlations between individuals
+?princomp # uses the spectral decomposition approach: 
+# examines the covariances/correlations between variables 
+# (need more individuals than variables)
 
-# Remember to center your data! (default = TRUE) -- use scale() on your matrix beforehand, or the option in prcomp()
+# Remember to center your data! (default = TRUE) -- use scale() on your matrix 
+# beforehand, or the option in prcomp()
 # And don't have any missing values!
 
 
@@ -77,7 +82,8 @@ cor(pc_loadings[,1], pc_loadings[,2])  # these should be orthogonal
 # top loadings on PC1
 # token loadings
 N <- 10
-pc1_loading <- tibble(token = rownames(pc_loadings), loading = as.vector(pc_loadings[,1])) %>% arrange(-loading)
+pc1_loading <- tibble(token = rownames(pc_loadings), loading = as.vector(pc_loadings[,1])) %>%
+  arrange(-loading)
 pc1_loading$loading <- scale(pc1_loading$loading, center = TRUE)
 pc1_loading <- rbind(top_n(pc1_loading, N, loading),top_n(pc1_loading, -N, loading))
 pc1_loading <- transform(pc1_loading, token = factor(token, levels = unique(token)))
@@ -113,7 +119,8 @@ ggplot(rotdat, aes(x = order, y = PC1, label = rownames(rotdat), color = party))
 # similarity in lower dimensional space 
 # -----------------------------------------
 
-# function computes cosine similarity between query and all documents and returns N most similar
+# function computes cosine similarity between query and all documents and 
+# returns N most similar
 nearest_neighbors <- function(query, low_dim_space, N = 5, norm = "l2"){
   cos_sim <- sim2(x = low_dim_space, y = low_dim_space[query, , drop = FALSE], method = "cosine", norm = norm)
   nn <- cos_sim <- cos_sim[order(-cos_sim),]
@@ -137,7 +144,8 @@ nearest_neighbors(query = "Reagan-1982", low_dim_space = SOTU_pca$x, N = 5, norm
 # Let's keep using the SOTU data from before
 SOTU_mat_lsa <- convert(SOTU_dfm, to = "lsa") # convert to transposed matrix 
 #(so terms are rows and columns are documents = TDM)
-SOTU_mat_lsa <- lw_logtf(SOTU_mat_lsa) * gw_idf(SOTU_mat_lsa) # local - global weighting (akin to TFIDF)
+SOTU_mat_lsa <- lw_logtf(SOTU_mat_lsa) * gw_idf(SOTU_mat_lsa) 
+# local - global weighting (akin to TFIDF)
 
 # Create LSA weights using TDM
 #lsa(myMatrix, dims = dimcalc_share(share = 0.8)) 
@@ -274,5 +282,6 @@ ggplot(temp, aes(marginaleffect, fixedeffect)) +
             nudge_y = 0.5) +
   geom_point(alpha = 0.5) +
   theme_bw()
+
 
 # also check out wordshoal!
