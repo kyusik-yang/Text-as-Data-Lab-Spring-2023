@@ -1,0 +1,94 @@
+---
+output:
+  bookdown::pdf_document2:
+    citation_package: natbib
+    latex_engine: pdflatex
+    template: tex-ms.tex
+    keep_tex: yes
+title: "Something:  \n  Something"
+date: "Word count: XXX"
+author:
+- name: Author 1
+  affiliation: NetID
+- name: Author 2 (if applicable)
+  affiliation: NetID
+abstract: "A nice succinct abstract here."
+toc: false
+geometry: margin= "left=2cm,right=2cm,top=2cm,bottom=2cm"
+#fontfamily: mathpazo
+fontsize: 11pt
+spacing: double
+bibliography: bibliography.bib
+biblio-style: chicago
+citecolor:
+urlcolor:
+linkcolor: blue
+anonymous: false 
+header-includes:
+   - \usepackage{wrapfig}
+   - \usepackage{makecell}
+   - \usepackage{setspace}
+   - \usepackage[utf8]{inputenc}
+   - \usepackage{float}
+   - \usepackage{epigraph}
+   - \usepackage{graphicx}
+   - \usepackage{tabularx}
+   - \usepackage{caption}
+   - \usepackage{array}
+   - \usepackage{lscape}
+   - \usepackage{placeins} 
+   - \usepackage{multirow}
+   - \usepackage{hyperref}
+   - \usepackage{cleveref}
+   - \usepackage{bbm}
+   - \usepackage{amsmath}
+   - \newcommand{\beginsupplement}{\setcounter{table}{0}  \renewcommand{\thetable}{A\arabic{table}} \setcounter{figure}{0} \renewcommand{\thefigure}{A\arabic{figure}}}
+---
+
+# Introduction
+
+Make sure you have all the necessary LaTeX packages installed on your machine. 
+
+# Theoretical Framework \& Literature
+
+## Subsections
+
+
+# Data \& Measurement
+
+# Results
+
+
+# Conclusion
+
+\pagebreak
+
+# Appendix 
+
+Put figures here
+
+
+```{r setup, echo=F, warning=F, message=F}
+
+pacman::p_load(dplyr)
+
+
+```
+
+
+
+
+```{r graph_trend_year, echo=T}
+# Add your code either in the appendix or in the main text
+
+```
+
+```{r, echo=F, warning=F, message=F, fig.align="center", out.width='80%', fig.cap="\\label{indextrend} Title of graph"}
+
+```
+
+
+
+\normalsize
+
+# References
