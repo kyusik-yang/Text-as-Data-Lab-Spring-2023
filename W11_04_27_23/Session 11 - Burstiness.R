@@ -77,8 +77,9 @@ manifesto <- readtext("./W5_03_02_23/cons_labour_manifestos/*.txt",
          party = substr(docvar1, 1, 3)) %>% 
   arrange(date, party) %>% 
   group_by(date) %>% 
-  mutate(text = paste(text, collapse = " ")) %>% 
-  filter(party == "Con")
+  summarise(text = toString(text)) %>%
+           ungroup() 
+  
 
 manifesto_corpus <- corpus(manifesto, text_field = "text")
 
