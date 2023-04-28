@@ -15,7 +15,8 @@ set.seed(1234)
 
 pacman::p_load(bursts,
                quanteda,
-               readtext)
+               readtext,
+               dplyr)
 
 # ============================================================================= #
 ####                              BURSTY FUNCTION                            ####
@@ -69,14 +70,17 @@ list.files("./W5_03_02_23/cons_labour_manifestos/")
 # Loading data
 
 manifesto <- readtext("./W5_03_02_23/cons_labour_manifestos/*.txt", 
-                      docvarsfrom=c("filenames"))
+                      docvarsfrom=c("filenames")) %>% 
+  mutate(date = as.numeric(gsub("[[:alpha:]]",
+                                "",
+                                docvar1)),
+         party = substr(docvar1, 1, 3)) %>% 
+  arrange(date, party) %>% 
+  group_by(date) %>% 
+  mutate(text = paste(text, collapse = " ")) %>% 
+  filter(party == "Con")
 
-manifesto_corpus <- corpus(manifesto)
-
-# set year
-manifesto_corpus$date <- as.numeric(gsub("[[:alpha:]]",
-                                         "",
-                                         manifesto_corpus$docvar1))
+manifesto_corpus <- corpus(manifesto, text_field = "text")
 
 manifesto_dfm <- dfm(manifesto_corpus)
 
