@@ -1,0 +1,76 @@
+---
+title: "Some Background on ALC embeddings & embedding regression"
+author: "Elisa Wirsching"
+date: "May 4, 2023"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# What problem are we trying to solve?
+
+- With most embedding models, we usually have *one* vector for a given term. 
+- But as social scientists, we often want to know how the meaning of a term changes across time or groups, i.e. we want to make *descriptive and inferential statements* about embeddings. 
+- This requires that we have embeddings that differ by instances of a term, capturing the different meanings of a term across instances. 
+- A la carte embeddings help us solve this problem! 
+
+# ALC embeddings 
+
+- ALC produce high-quality embeddings with a minimal number of term instances.
+- Relies on the fact that we can recover any existing word vector from additive context embeddings:  Existing word vectors \(\mathbf{v_w}\) can be recovered by the weighted additive composition of context embeddings \(\mathbf{v_w^{additive}}\)
+
+\begin{align}
+	\mathbf{v_w}&\approx\mathbf{A}\mathbf{v_w^{additive}}=\mathbf{A}\left(\frac{1}{|\mathbf{C_w}|}\sum_{c \in \mathbf{C_w}} \sum_{\mathbf{w'} \in c} \mathbf{v_{w'}}\right) \label{eq:1}
+\end{align}
+
+with set of contexts \(\mathbf{C_w}\) for word \(w\), contexts \(c\) and context word embeddings \(\mathbf{v_{w'}}\)
+
+- The transformation matrix $\mathbf{A}$ "rotates away" from common directions, i.e. function words in the context window.
+
+- We need to learn transformation matrix: 
+
+\begin{align}
+	\hat{\mathbf{A}} = \mathop{\mathrm{arg\,min}}_{\mathbf{A} \in \mathbb{R}^{d \times d}}\sum_{w=1}^{W} \alpha(c_w)||\mathbf{v_w}-\mathbf{A}\mathbf{v_w^{additive}}||_{2}^{2}  \label{eq:2}
+\end{align}
+
+- Note that this is a simple weighted regression problem.
+
+- After learning the transformation matrix, we can embed any instance of a term a-la-carte:
+\begin{align}
+	\mathbf{v_f}&=\mathbf{\hat{A}}\mathbf{v_f^{additive}}=\mathbf{\hat{A}}\left(\frac{1}{|\mathbf{C_f}|}\sum_{c \in \mathbf{C_f}} \sum_{\mathbf{w} \in c} \mathbf{v_{w}}\right)
+\end{align}
+
+
+# Embedding regression
+
+- Note that we can rewrite the expression above as: 
+
+\begin{align}
+	\mathbf{v_w}&=\mathbf{A}\mathbf{v_w^{additive}}=\mathbb{E}_c[\mathbf{A}\mathbf{v_{wc}^{additive}}] = \mathbf{A} \mathbb{E}_c[\mathbf{v_w^{additive}}]
+\end{align}
+
+- Amazing, we leverage this fact for the embedding regression of the form: 
+
+\begin{align}
+	\underbrace{\mathbf{Y}}_{n\times D}&=\underbrace{\mathbf{X}}_{n\times p + 1} \underbrace{\mathbf{\beta}}_{p+1 \times D} + \underbrace{\mathbf{E}}_{n\times D}
+\end{align}
+
+- Let's consider an easy example with just two groups: We want to distinguish the meaning of term $w$ across group $A$ and $B$, where our covariate $\mathbf{X}$ is just a dummy for whether group is $A$ or not:
+
+\begin{align}
+	\mathbb{E}[\mathbf{Y} | A]&=\mathbf{A}\mathbf{v_{w|A}^{additive}} = \mathbf{v_{w|A}} = \mathbf{\beta_0}
+\end{align}
+
+\begin{align}
+	\mathbb{E}[\mathbf{Y} | B]&=\mathbf{A}\mathbf{v_{w|B}^{additive}} = \mathbf{v_{w|B}} = \mathbf{\beta_0} + \mathbf{\beta_1} 
+\end{align}
+
+- Note that the coefficients here are *vectors*, so we usually use the norm for interpretation.
+
+
+These examples and explanations are inspired by [Khodak et al. (2018) A La Carte Embedding: Cheap but Effective Induction of Semantic Feature Vectors.](https://arxiv.org/abs/1805.05388) and [Rodriguez et al. (2023) Embedding Regression: Models for Context-Specific Description and Inference](https://www.cambridge.org/core/services/aop-cambridge-core/content/view/4C90013E5C714C8483ED95CC699022FB/S0003055422001228a.pdf/embedding-regression-models-for-context-specific-description-and-inference.pdf).
+
