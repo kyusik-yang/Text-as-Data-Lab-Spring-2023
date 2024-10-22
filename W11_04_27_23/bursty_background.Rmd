@@ -3,8 +3,8 @@ title: "Some Background on Bursty Models (Kleinberg 2003)"
 author: "Elisa Wirsching"
 date: "April 27, 2023"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include = FALSE}
